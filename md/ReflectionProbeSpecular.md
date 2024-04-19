@@ -11,13 +11,14 @@
  - Bake Reflection Probes : 리플렉션 프로브를 베이크 해줍니다.
  - Scale : 구의 크기 조절
  - Intensity : 에미션 세기 조절
+ - saturation : 채도 조절
 
 
   
 ![easyme](/md/img/ReflectionProbeSpecular_02.png)
 
 Create Sphere 를 누르면 구가 생성됩니다. 포인트 라이트의 색상을 자동으로 추출해서 가져옵니다.
-Scale 과 Intensity를 조절하면 바로바로 변경할수 있습니다.  
+Sphere Control을 조절하면 바로바로 변경할수 있습니다.  
 Bake Reflection Probes를 눌러서 베이크 해줍니다.
 
 ![easyme](/md/img/ReflectionProbeSpecular_03.png)
