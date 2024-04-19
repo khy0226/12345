@@ -9,9 +9,9 @@ void AdditionalLights_float(float3 WorldPosition, float3 WorldNormal, float3 Wor
     WorldNormal = normalize(WorldNormal);
     WorldView = SafeNormalize(WorldView);
     int pixelLightCount = GetAdditionalLightsCount();
-    for (int i = 0; i < pixelLightCount; ++i)
+    for (int lightIndex = 0; lightIndex < pixelLightCount; lightIndex++)
     {
-        Light light = GetAdditionalLight(i, WorldPosition);
+        Light light = GetAdditionalLight(lightIndex, WorldPosition);
 //        half3 attenuatedLightColor = light.color * (light.distanceAttenuation * light.shadowAttenuation);
 //        diffuseColor += LightingLambert(attenuatedLightColor, light.direction, WorldNormal);
         direction = light.direction;
@@ -38,9 +38,9 @@ void AdditionalLights_half(half3 WorldPosition, half3 WorldNormal, half3 WorldVi
     WorldNormal = normalize(WorldNormal);
     WorldView = SafeNormalize(WorldView);
     int pixelLightCount = GetAdditionalLightsCount();
-    for (int i = 0; i < pixelLightCount; ++i)
+    for (int lightIndex = 0; lightIndex < pixelLightCount; ++lightIndex)
     {
-        Light light = GetAdditionalLight(i, WorldPosition);
+        Light light = GetAdditionalLight(lightIndex, WorldPosition);
 //        half3 attenuatedLightColor = light.color * (light.distanceAttenuation * light.shadowAttenuation);
 //        diffuseColor += LightingLambert(attenuatedLightColor, light.direction, WorldNormal);
         direction = light.direction;
