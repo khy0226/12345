@@ -29,6 +29,10 @@ half _ClearCoatSmoothness;
 half _DetailAlbedoMapScale;
 half _DetailNormalMapScale;
 half _Surface;
+
+half3 _SnowDirectional;
+half _BlendScale;
+half _BlendNormal;
 CBUFFER_END
 
 // NOTE: Do not ifdef the properties for dots instancing, but ifdef the actual usage.
@@ -51,6 +55,10 @@ UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
     UNITY_DOTS_INSTANCED_PROP(float , _DetailAlbedoMapScale)
     UNITY_DOTS_INSTANCED_PROP(float , _DetailNormalMapScale)
     UNITY_DOTS_INSTANCED_PROP(float , _Surface)
+
+    UNITY_DOTS_INSTANCED_PROP(float3 , _SnowDirectional)
+    UNITY_DOTS_INSTANCED_PROP(float , _BlendScale)
+    UNITY_DOTS_INSTANCED_PROP(float , _BlendNormal)
 UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
 
 // Here, we want to avoid overriding a property like e.g. _BaseColor with something like this:
@@ -78,6 +86,10 @@ static float  unity_DOTS_Sampled_DetailAlbedoMapScale;
 static float  unity_DOTS_Sampled_DetailNormalMapScale;
 static float  unity_DOTS_Sampled_Surface;
 
+static float3  unity_DOTS_Sampled_SnowDirectional;
+static float  unity_DOTS_Sampled_BlendScale;
+static float  unity_DOTS_Sampled_BlendNormal;
+
 void SetupDOTSLitMaterialPropertyCaches()
 {
     unity_DOTS_Sampled_BaseColor            = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float4, _BaseColor);
@@ -94,6 +106,10 @@ void SetupDOTSLitMaterialPropertyCaches()
     unity_DOTS_Sampled_DetailAlbedoMapScale = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _DetailAlbedoMapScale);
     unity_DOTS_Sampled_DetailNormalMapScale = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _DetailNormalMapScale);
     unity_DOTS_Sampled_Surface              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _Surface);
+
+    unity_DOTS_Sampled_SnowDirectional              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float3 , _SnowDirectional);
+    unity_DOTS_Sampled_BlendScale              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendScale);
+    unity_DOTS_Sampled_BlendNormal              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendNormal);
 }
 
 #undef UNITY_SETUP_DOTS_MATERIAL_PROPERTY_CACHES
@@ -113,6 +129,10 @@ void SetupDOTSLitMaterialPropertyCaches()
 #define _DetailAlbedoMapScale   unity_DOTS_Sampled_DetailAlbedoMapScale
 #define _DetailNormalMapScale   unity_DOTS_Sampled_DetailNormalMapScale
 #define _Surface                unity_DOTS_Sampled_Surface
+
+#define _SnowDirectional                unity_DOTS_Sampled_SnowDirectional
+#define _BlendScale                unity_DOTS_Sampled_BlendScale
+#define _BlendNormal                unity_DOTS_Sampled_BlendNormal
 
 #endif
 

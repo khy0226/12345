@@ -40,6 +40,16 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
         _DetailNormalMapScale("Scale", Range(0.0, 2.0)) = 1.0
         [Normal] _DetailNormalMap("Normal Map", 2D) = "bump" {}
 
+
+        //눈 관련 프로퍼티
+        
+        _SnowDirectional("Snow Directional", Vector) = (0.0, 1.0, 0.0, 0.0)
+        _BlendScale("Blend Scale", Range(0.0, 1.0)) = 0.5
+//        [ToggleUI] _BlendNormalON("Blend Normal On/Off", Float) = 0.0
+        _BlendNormal("Blend Normal", Range(0.0, 1.0)) = 0.5
+
+
+
         // SRP batching compatibility for Clear Coat (Not used in Lit)
         [HideInInspector] _ClearCoatMask("_ClearCoatMask", Float) = 0.0
         [HideInInspector] _ClearCoatSmoothness("_ClearCoatSmoothness", Float) = 0.0
@@ -160,6 +170,11 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
             #pragma multi_compile_fog
             #pragma multi_compile_fragment _ DEBUG_DISPLAY
 
+            // --------------------------------------
+            // 눈 키워드SnowDirectional
+            #pragma multi_compile _ KEYWORDTEST
+            #pragma shader_feature_local _SNOWDIRECTIONAL
+
             //--------------------------------------
             // GPU Instancing
             #pragma multi_compile_instancing
@@ -167,7 +182,7 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
 //            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitInput.hlsl"
-            #include "LitInput.hlsl"
+            #include "SnowLitInput.hlsl"
 //            #include "Packages/com.unity.render-pipelines.universal/Shaders/LitForwardPass.hlsl"
 
 
@@ -300,12 +315,24 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
 
             struct SnowData { float test;};
 
-            void InitializeSnowData(InputData inputData, out SnowData snowData)
-            {
-                half3 snowDir = half3(0,1,0);
-                half ndots = dot(inputData.normalWS, snowDir);
+            void InitializeSnowData(Varyings input, InputData inputData, out SnowData snowData)
+            {            
+                half3 snowDir = normalize(_SnowDirectional);
+                #if (SNOWDIRECTIONAL) 
+                half blendNormal = leaf(input.normalWS, inputData.normalWS, BlendNormal);
+                half ndots = saturate(dot(blendNormal, snowDir));
+                #else
+                half ndots = saturate(dot(inputData.normalWS, snowDir));
+                #endif
+                half blendScale = (ndots - _BlendScale) / (1 - _BlendScale);
+                half snowBasic = saturate(blendScale);
 
-                snowData.test = saturate(ndots);
+
+                
+                
+
+
+                snowData.test = snowBasic;
             }
 
 
@@ -386,9 +413,7 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
                 outSurfaceData.alpha = Alpha(albedoAlpha.a, _BaseColor, _Cutoff);
 
                 half4 specGloss = SampleMetallicSpecGloss(uv, albedoAlpha.a);
-                half3 SurfaceAlbedo = albedoAlpha.rgb * _BaseColor.rgb;
-//                outSurfaceData.albedo = lerp(SurfaceAlbedo, 1, snowData.test);
-                outSurfaceData.albedo = SurfaceAlbedo;
+                outSurfaceData.albedo = albedoAlpha.rgb * _BaseColor.rgb;
                 outSurfaceData.albedo = AlphaModulate(outSurfaceData.albedo, outSurfaceData.alpha);
 
             #if _SPECULAR_SETUP
@@ -458,7 +483,7 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
                 SETUP_DEBUG_TEXTURE_DATA(inputData, input.uv, _BaseMap);
 
                 SnowData snowData;
-                InitializeSnowData(inputData, snowData);
+                InitializeSnowData(input, inputData, snowData);
 
 
             #ifdef _DBUFFER
@@ -466,8 +491,14 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
             #endif
 
                 surfaceData.albedo = lerp(surfaceData.albedo,1,snowData.test);
+                surfaceData.normalTS = lerp(surfaceData.normalTS,1,snowData.test);
 
+            #ifdef KEYWORDTEST
+                half4 color = UniversalFragmentBlinnPhong(inputData, surfaceData); 
+            #else
                 half4 color = UniversalFragmentPBR(inputData, surfaceData);
+            #endif
+
                 color.rgb = MixFog(color.rgb, inputData.fogCoord);
                 color.a = OutputAlpha(color.a, IsSurfaceTypeTransparent(_Surface));
 
@@ -792,5 +823,5 @@ Shader "JICHEON/Universal Render Pipeline/SnowLit"
     }
 
     FallBack "Hidden/Universal Render Pipeline/FallbackError"
-    CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.LitShader"
+    CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.SnowLitShader"
 }
