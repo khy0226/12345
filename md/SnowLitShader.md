@@ -7,6 +7,7 @@
 릿 쉐이더 기반으로 만들었기때문에 그냥 쉐이더만 바꿔주면 됩니다.
  
 ![easyme](/md/img/snowlit/AdvancedOptions.png)
+
 Advanced Options을 펼치면 이것저것 조절할게 있으니 적당히 조절하면 됩니다.
 
   
