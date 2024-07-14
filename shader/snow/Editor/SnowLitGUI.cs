@@ -246,6 +246,20 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
 
             public MaterialProperty snowDirectional;
+            public MaterialProperty additionalMapColor;
+            public MaterialProperty additionalMapOn;
+            public MaterialProperty additionalMap;
+            public MaterialProperty additionalSmoothness;
+            public MaterialProperty additionalNormal;
+            public MaterialProperty additionalNormalScale;
+            public MaterialProperty blendScale;
+            public MaterialProperty blendNormal;
+            public MaterialProperty noiseOn;
+            public MaterialProperty noiseMap;
+            public MaterialProperty noiseIntensity;
+            public MaterialProperty vertexPaint;
+
+
 
 
 
@@ -280,6 +294,18 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 clearCoatSmoothness = BaseShaderGUI.FindProperty("_ClearCoatSmoothness", properties, false);
 
                 snowDirectional = BaseShaderGUI.FindProperty("_SnowDirectional", properties, false);
+                additionalMapColor = BaseShaderGUI.FindProperty("_AdditionalMapColor", properties, false);
+                additionalMapOn = BaseShaderGUI.FindProperty("_AdditionalMapOn", properties, false);
+                additionalMap = BaseShaderGUI.FindProperty("_AdditionalMap", properties, false);
+                additionalSmoothness = BaseShaderGUI.FindProperty("_AdditionalSmoothness", properties, false);
+                additionalNormal = BaseShaderGUI.FindProperty("_AdditionalNormal", properties, false);
+                additionalNormalScale = BaseShaderGUI.FindProperty("_AdditionalNormalScale", properties, false);
+                blendScale = BaseShaderGUI.FindProperty("_BlendScale", properties, false);
+                blendNormal = BaseShaderGUI.FindProperty("_BlendNormal", properties, false);
+                noiseOn = BaseShaderGUI.FindProperty("_NoiseOn", properties, false);
+                noiseMap = BaseShaderGUI.FindProperty("_NoiseMap", properties, false);
+                noiseIntensity = BaseShaderGUI.FindProperty("_NoiseIntensity", properties, false);
+                vertexPaint = BaseShaderGUI.FindProperty("_VertexPaint", properties, false);
             }
         }
 
@@ -491,6 +517,16 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
                 CoreUtils.SetKeyword(material, "_SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A",
                     GetSmoothnessMapChannel(material) == SmoothnessMapChannel.AlbedoAlpha && opaque);
             }
+
+
+ /*               var hasAdditionalMap = false;
+                if (material.HasProperty("_AdditionalMap"))
+                {
+                hasAdditionalMap = material.GetTexture("_AdditionalMap") != null;
+                }
+
+                CoreUtils.SetKeyword(material, "_ADDITIONALMAPON_ON", hasAdditionalMap);
+*/
 
             // Clear coat keywords are independent to remove possiblity of invalid combinations.
             if (ClearCoatEnabled(material))

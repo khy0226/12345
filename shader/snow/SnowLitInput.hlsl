@@ -1,5 +1,5 @@
-#ifndef UNIVERSAL_LIT_INPUT_INCLUDED
-#define UNIVERSAL_LIT_INPUT_INCLUDED
+#ifndef SNOW_LIT_INPUT_INCLUDED
+#define SNOW_LIT_INPUT_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
@@ -30,9 +30,16 @@ half _DetailAlbedoMapScale;
 half _DetailNormalMapScale;
 half _Surface;
 
+// 눈 관련
+half4 _AdditionalMapColor;
+half4 _AdditionalMap_ST;
+half _AdditionalSmoothness;
+half _AdditionalNormalScale;
 half3 _SnowDirectional;
 half _BlendScale;
 half _BlendNormal;
+half4 _NoiseMap_ST;
+half _NoiseIntensity;
 CBUFFER_END
 
 // NOTE: Do not ifdef the properties for dots instancing, but ifdef the actual usage.
@@ -56,9 +63,13 @@ UNITY_DOTS_INSTANCING_START(MaterialPropertyMetadata)
     UNITY_DOTS_INSTANCED_PROP(float , _DetailNormalMapScale)
     UNITY_DOTS_INSTANCED_PROP(float , _Surface)
 
-    UNITY_DOTS_INSTANCED_PROP(float3 , _SnowDirectional)
+    UNITY_DOTS_INSTANCED_PROP(float4, _AdditionalMapColor)
+    UNITY_DOTS_INSTANCED_PROP(float,  _AdditionalSmoothness)
+    UNITY_DOTS_INSTANCED_PROP(float,  _AdditionalNormalScale)
+    UNITY_DOTS_INSTANCED_PROP(float3, _SnowDirectional)
     UNITY_DOTS_INSTANCED_PROP(float , _BlendScale)
     UNITY_DOTS_INSTANCED_PROP(float , _BlendNormal)
+    UNITY_DOTS_INSTANCED_PROP(float , _NoiseIntensity)
 UNITY_DOTS_INSTANCING_END(MaterialPropertyMetadata)
 
 // Here, we want to avoid overriding a property like e.g. _BaseColor with something like this:
@@ -86,9 +97,13 @@ static float  unity_DOTS_Sampled_DetailAlbedoMapScale;
 static float  unity_DOTS_Sampled_DetailNormalMapScale;
 static float  unity_DOTS_Sampled_Surface;
 
-static float3  unity_DOTS_Sampled_SnowDirectional;
+static float4 unity_DOTS_Sampled_AdditionalMapColor;
+static float  unity_DOTS_Sampled_AdditionalSmoothness;
+static float  unity_DOTS_Sampled_AdditionalNormalScale;
+static float3 unity_DOTS_Sampled_SnowDirectional;
 static float  unity_DOTS_Sampled_BlendScale;
 static float  unity_DOTS_Sampled_BlendNormal;
+static float  unity_DOTS_Sampled_NoiseIntensity;
 
 void SetupDOTSLitMaterialPropertyCaches()
 {
@@ -107,9 +122,13 @@ void SetupDOTSLitMaterialPropertyCaches()
     unity_DOTS_Sampled_DetailNormalMapScale = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _DetailNormalMapScale);
     unity_DOTS_Sampled_Surface              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _Surface);
 
-    unity_DOTS_Sampled_SnowDirectional              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float3 , _SnowDirectional);
-    unity_DOTS_Sampled_BlendScale              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendScale);
-    unity_DOTS_Sampled_BlendNormal              = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendNormal);
+    unity_DOTS_Sampled_AdditionalMapColor   = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float4, _AdditionalMapColor);
+    unity_DOTS_Sampled_AdditionalSmoothness = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float,  _AdditionalSmoothness);
+    unity_DOTS_Sampled_AdditionalNormalScale= UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float,  _AdditionalNormalScale);
+    unity_DOTS_Sampled_SnowDirectional      = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float3, _SnowDirectional);
+    unity_DOTS_Sampled_BlendScale           = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendScale);
+    unity_DOTS_Sampled_BlendNormal          = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _BlendNormal);
+    unity_DOTS_Sampled_NoiseIntensity       = UNITY_ACCESS_DOTS_INSTANCED_PROP_WITH_DEFAULT(float , _NoiseIntensity);
 }
 
 #undef UNITY_SETUP_DOTS_MATERIAL_PROPERTY_CACHES
@@ -130,9 +149,13 @@ void SetupDOTSLitMaterialPropertyCaches()
 #define _DetailNormalMapScale   unity_DOTS_Sampled_DetailNormalMapScale
 #define _Surface                unity_DOTS_Sampled_Surface
 
-#define _SnowDirectional                unity_DOTS_Sampled_SnowDirectional
-#define _BlendScale                unity_DOTS_Sampled_BlendScale
-#define _BlendNormal                unity_DOTS_Sampled_BlendNormal
+#define _AdditionalMapColor     unity_DOTS_Sampled_AdditionalMapColor
+#define _AdditionalSmoothness   unity_DOTS_Sampled_AdditionalSmoothness
+#define _AdditionalNormalScale  unity_DOTS_Sampled_AdditionalNormalScale
+#define _SnowDirectional        unity_DOTS_Sampled_SnowDirectional
+#define _BlendScale             unity_DOTS_Sampled_BlendScale
+#define _BlendNormal            unity_DOTS_Sampled_BlendNormal
+#define _NoiseIntensity         unity_DOTS_Sampled_NoiseIntensity
 
 #endif
 
@@ -144,6 +167,11 @@ TEXTURE2D(_DetailNormalMap);    SAMPLER(sampler_DetailNormalMap);
 TEXTURE2D(_MetallicGlossMap);   SAMPLER(sampler_MetallicGlossMap);
 TEXTURE2D(_SpecGlossMap);       SAMPLER(sampler_SpecGlossMap);
 TEXTURE2D(_ClearCoatMap);       SAMPLER(sampler_ClearCoatMap);
+
+TEXTURE2D(_AdditionalMap);      SAMPLER(sampler_AdditionalMap);
+TEXTURE2D(_AdditionalNormal);   SAMPLER(sampler_AdditionalNormal);
+TEXTURE2D(_NoiseMap);           SAMPLER(sampler_NoiseMap);
+
 
 #ifdef _SPECULAR_SETUP
     #define SAMPLE_METALLICSPECULAR(uv) SAMPLE_TEXTURE2D(_SpecGlossMap, sampler_SpecGlossMap, uv)
@@ -241,7 +269,8 @@ half3 ApplyDetailAlbedo(float2 detailUv, half3 albedo, half detailMask)
     detailAlbedo = half(2.0) * detailAlbedo;
 #endif
 
-    return albedo * LerpWhiteTo(detailAlbedo, detailMask);
+//    return albedo * LerpWhiteTo(detailAlbedo, detailMask);
+    return albedo * detailAlbedo;
 #else
     return albedo;
 #endif
@@ -260,7 +289,8 @@ half3 ApplyDetailNormal(float2 detailUv, half3 normalTS, half detailMask)
     // For visual consistancy we going to do in all cases
     detailNormalTS = normalize(detailNormalTS);
 
-    return lerp(normalTS, BlendNormalRNM(normalTS, detailNormalTS), detailMask); // todo: detailMask should lerp the angle of the quaternion rotation, not the normals
+//    return lerp(normalTS, BlendNormalRNM(normalTS, detailNormalTS), detailMask); // todo: detailMask should lerp the angle of the quaternion rotation, not the normals
+    return BlendNormal(normalTS, detailNormalTS); // todo: detailMask should lerp the angle of the quaternion rotation, not the normals
 #else
     return normalTS;
 #endif
@@ -298,11 +328,14 @@ inline void InitializeStandardLitSurfaceData(float2 uv, out SurfaceData outSurfa
 #endif
 
 #if defined(_DETAIL)
-    half detailMask = SAMPLE_TEXTURE2D(_DetailMask, sampler_DetailMask, uv).a;
+//디테일을 사용하면 디테일 마스크 텍스쳐가 없어도 작동을 시작하기때문에 느려지는 문제가 있어서 비활성화 했음
+//    half detailMask = SAMPLE_TEXTURE2D(_DetailMask, sampler_DetailMask, uv).a;
     float2 detailUv = uv * _DetailAlbedoMap_ST.xy + _DetailAlbedoMap_ST.zw;
-    outSurfaceData.albedo = ApplyDetailAlbedo(detailUv, outSurfaceData.albedo, detailMask);
-    outSurfaceData.normalTS = ApplyDetailNormal(detailUv, outSurfaceData.normalTS, detailMask);
+    outSurfaceData.albedo = ApplyDetailAlbedo(detailUv, outSurfaceData.albedo, 1);
+    outSurfaceData.normalTS = ApplyDetailNormal(detailUv, outSurfaceData.normalTS, 1);
 #endif
+
+
 }
 
 #endif // UNIVERSAL_INPUT_SURFACE_PBR_INCLUDED

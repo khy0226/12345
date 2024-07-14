@@ -17,7 +17,42 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
 
             public static GUIContent snowDirectionalText = EditorGUIUtility.TrTextContent("Snow Directional",
                 "눈 방향.");
+            
+            public static GUIContent additionalMapColorText = EditorGUIUtility.TrTextContent("Additional Color",
+                "눈 색.");
 
+            public static GUIContent additionalMapOnText = EditorGUIUtility.TrTextContent("Additional Map",
+                "눈 텍스쳐 사용여부.");
+            
+            public static GUIContent additionalMapText = EditorGUIUtility.TrTextContent("Base Map",
+                "눈 베이스(RGB) 눈 스무스니스(A)");
+            
+            public static GUIContent additionalSmoothnessText = EditorGUIUtility.TrTextContent("Smoothness",
+                "스무스니스 세기");
+            
+            public static GUIContent additionalNormalText = EditorGUIUtility.TrTextContent("Normal Map",
+                "눈 노멀 텍스쳐");
+            
+            public static GUIContent additionalNormalScaleText = EditorGUIUtility.TrTextContent("Additional Normal Scale",
+                "눈 노멀 세기");
+            
+            public static GUIContent blendScaleText = EditorGUIUtility.TrTextContent("Blend Scale",
+                "눈 덮힘 조절");
+                        
+            public static GUIContent blendNormalText = EditorGUIUtility.TrTextContent("Blend Normal",
+                "눈 덮힘 모양 변경");
+
+            public static GUIContent noiseOnText = EditorGUIUtility.TrTextContent("Noise",
+                "눈 덮힘 모양 노이즈 추가여부");
+
+            public static GUIContent noiseMapText = EditorGUIUtility.TrTextContent("Noise Map",
+                "눈 덮힘 모양 노이즈 추가");
+            
+            public static GUIContent noiseIntensityText = EditorGUIUtility.TrTextContent("Noise Intensity",
+                "눈 덮힘 모양 노이즈 조절");
+            
+            public static GUIContent vertexPaintText = EditorGUIUtility.TrTextContent("Vertex Paint",
+                "사용하면 버텍스컬러로 빨간색이면 눈이 안덮힘");
         }
 
 
@@ -62,20 +97,77 @@ namespace UnityEditor.Rendering.Universal.ShaderGUI
             Vector3 vector3Value = new Vector3(vector4Value.x, vector4Value.y, vector4Value.z);
 
             // XYZ 값만 표시
-            vector3Value = EditorGUILayout.Vector3Field(StylesS.snowDirectionalText.text, vector3Value);
+            vector3Value = EditorGUILayout.Vector3Field(StylesS.snowDirectionalText, vector3Value);
 
             // XYZ 값을 업데이트하고 W 값은 유지
             litProperties.snowDirectional.vectorValue = new Vector4(vector3Value.x, vector3Value.y, vector3Value.z, vector4Value.w);
 
 //            materialEditor.ShaderProperty(litProperties.snowDirectional, StylesS.snowDirectionalText, 1);
 
-            EditorGUILayout.Space();
+            EditorGUILayout.Space(10);
+
+
+//            materialEditor.ShaderProperty(litProperties.additionalMapColor, StylesS.additionalMapColorText, 0);
+            materialEditor.ShaderProperty(litProperties.additionalMapOn, StylesS.additionalMapOnText, 0);
+            
+
+            if (material.GetInt("_AdditionalMapOn") == 1)
+            {
+                materialEditor.TexturePropertySingleLine(StylesS.additionalMapText, litProperties.additionalMap, litProperties.additionalMapColor);
+                material.SetTexture("_AdditionalMap", litProperties.additionalMap.textureValue);
+
+                materialEditor.ShaderProperty(litProperties.additionalSmoothness, StylesS.additionalSmoothnessText, 2);
+
+
+                if (material.GetTexture("_AdditionalNormal") != null)
+                {
+                    materialEditor.TexturePropertySingleLine(StylesS.additionalNormalText, litProperties.additionalNormal, litProperties.additionalNormalScale);
+                }
+                else
+                {
+                    materialEditor.TexturePropertySingleLine(StylesS.additionalNormalText, litProperties.additionalNormal);
+                }
+                materialEditor.TextureScaleOffsetProperty(litProperties.additionalMap);
+                var additionalMapTiling = litProperties.additionalMap.textureScaleAndOffset;
+                material.SetTextureScale("_AdditionalMap", new Vector2(additionalMapTiling.x, additionalMapTiling.y));
+                material.SetTextureOffset("_AdditionalMap", new Vector2(additionalMapTiling.z, additionalMapTiling.w));
+            }
+            if (material.GetInt("_AdditionalMapOn") == 0)
+            {
+                materialEditor.ShaderProperty(litProperties.additionalMapColor, StylesS.additionalMapColorText, 2);
+                materialEditor.ShaderProperty(litProperties.additionalSmoothness, StylesS.additionalSmoothnessText, 2);
+            }
+
+            EditorGUILayout.Space(10);
+
+            materialEditor.ShaderProperty(litProperties.blendScale, StylesS.blendScaleText, 0);
+            materialEditor.ShaderProperty(litProperties.blendNormal, StylesS.blendNormalText, 0);
+
+
+            EditorGUILayout.Space(10);
+
+            materialEditor.ShaderProperty(litProperties.noiseOn, StylesS.noiseOnText, 0);
+            if (material.GetInt("_NoiseOn") == 1)
+            {
+                materialEditor.TexturePropertySingleLine(StylesS.noiseMapText, litProperties.noiseMap, litProperties.noiseIntensity);
+
+                materialEditor.TextureScaleOffsetProperty(litProperties.noiseMap);
+                var noiseMapTiling = litProperties.additionalMap.textureScaleAndOffset;
+                material.SetTextureScale("_AdditionalMap", new Vector2(noiseMapTiling.x, noiseMapTiling.y));
+                material.SetTextureOffset("_AdditionalMap", new Vector2(noiseMapTiling.z, noiseMapTiling.w));
+
+
+            }
+
+            EditorGUILayout.Space(10);
+
+            materialEditor.ShaderProperty(litProperties.vertexPaint, StylesS.vertexPaintText, 0);
 
         }
 
 
-        // material main surface inputs
-        public override void DrawSurfaceInputs(Material material)
+    // material main surface inputs
+    public override void DrawSurfaceInputs(Material material)
         {
             base.DrawSurfaceInputs(material);
             SnowLitGUI.Inputs(litProperties, materialEditor, material);
